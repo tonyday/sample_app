@@ -10,18 +10,18 @@ describe "UserPages" do
   end
 
   describe 'profile page' do
-    let(:user) {FactoryGirl.create(:user)}
+    let(:user) { FactoryGirl.create(:user) }
     before { visit user_path(user) }
     it { should have_selector('h1', text: user.name) }
     it { should have_selector('title', text: user.name) }
   end
 
   describe 'signup' do
-    before {visit signup_path}
+    before { visit signup_path }
 
     describe 'with invalid information' do
       it 'should not create a user' do
-        expect {click_button 'Sign up'}.not_to change(User, :count)
+        expect { click_button 'Sign up' }.not_to change(User, :count)
       end
     end
 
@@ -33,9 +33,24 @@ describe "UserPages" do
         fill_in 'Confirmation', with: 'foobar'
       end
       it 'should create a user' do
-        expect {click_button 'Sign up'}.to change(User, :count).by(1)
+        expect { click_button 'Sign up' }.to change(User, :count).by(1)
+      end
+
+      describe 'after saving the user' do
+        before {click_button 'Sign up'}
+        let(:user) {User.find_by_email('user@example.com')}
+        it {should have_selector('title', text: user.name)}
+        it {should have_selector('div.success.flash', text: 'Welcome')}
       end
     end
+
+    describe 'error messages' do
+      before { click_button 'Sign up' }
+      let(:error) { 'errors prohibited this user from being saved' }
+      it { should have_selector('title', text: 'Sign up') }
+      it { should have_content(error) }
+    end
+
   end
 
 end
